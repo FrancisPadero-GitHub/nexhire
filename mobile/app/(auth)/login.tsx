@@ -138,7 +138,7 @@ export default function LoginScreen() {
         </View>
         <View style={{ alignItems: "center", marginTop: "25%" }}>
           <Pressable
-            onPress={() => router.push("/onboarding")}
+            onPress={() => router.push("/(onboarding)")}
             style={styles.backButton}
           >
             <FontAwesome name="chevron-left" size={16} color={Colors.primary} />
