@@ -82,9 +82,10 @@ function RootLayoutNav() {
         <Stack.Screen name="edit-profile" />
         <Stack.Screen name="career-info" />
 
-        {/* ── Jobs ── */}
+        {/* ── Jobs & Application flow ── */}
         <Stack.Screen name="job-detail" />
         <Stack.Screen name="job-preferences" />
+        <Stack.Screen name="application-match" />
         <Stack.Screen name="application-status" />
 
         {/* ── Settings detail ── */}

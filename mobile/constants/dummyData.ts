@@ -316,74 +316,97 @@ export const DUMMY_SCORES = {
   ],
 };
 
-// ─── Application Status ────────────────────────────────
-export const DUMMY_APPLICATIONS = [
+// ─── Application Status (Pipeline) ─────────────────────
+// New flow: Apply → Resume Submitted → Resume Scored → AI Interview → Scored → Decision
+export type ApplicationStatus =
+  | "Resume Submitted"
+  | "Resume Scoring"
+  | "Resume Scored"
+  | "Interview Pending"
+  | "Interview Completed"
+  | "Under Review"
+  | "Shortlisted"
+  | "Offered"
+  | "Rejected";
+
+export interface Application {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  company: string;
+  status: ApplicationStatus;
+  appliedDate: string;
+  lastUpdate: string;
+  resumeMatchScore: number | null; // resume vs job match %
+  interviewScore: number | null; // AI interview score
+}
+
+export const DUMMY_APPLICATIONS: Application[] = [
   {
     id: "app_001",
+    jobId: "job_001",
     jobTitle: "Senior React Developer",
     company: "TechCorp Inc.",
-    status: "Interview Completed" as const,
+    status: "Interview Completed",
     appliedDate: "Feb 15, 2025",
     lastUpdate: "Feb 18, 2025",
-    score: 92,
+    resumeMatchScore: 95,
+    interviewScore: 87,
   },
   {
     id: "app_002",
+    jobId: "job_002",
     jobTitle: "Full Stack Engineer",
     company: "InnovateCo",
-    status: "Under Review" as const,
+    status: "Resume Scored",
     appliedDate: "Feb 12, 2025",
     lastUpdate: "Feb 14, 2025",
-    score: null,
+    resumeMatchScore: 88,
+    interviewScore: null,
   },
   {
     id: "app_003",
+    jobId: "job_003",
     jobTitle: "React Native Developer",
     company: "MobileFirst Labs",
-    status: "Shortlisted" as const,
+    status: "Interview Pending",
     appliedDate: "Feb 10, 2025",
     lastUpdate: "Feb 17, 2025",
-    score: 88,
+    resumeMatchScore: 92,
+    interviewScore: null,
   },
-
   {
     id: "app_004",
-    jobTitle: "React Developer",
-    company: "Webfirst Labs",
-    status: "Applied" as const,
-    appliedDate: "Feb 10, 2024",
-    lastUpdate: "Feb 17, 2025",
-    score: 88,
+    jobId: "job_004",
+    jobTitle: "Frontend Team Lead",
+    company: "Enterprise Solutions",
+    status: "Resume Submitted",
+    appliedDate: "Feb 18, 2025",
+    lastUpdate: "Feb 18, 2025",
+    resumeMatchScore: null,
+    interviewScore: null,
   },
-
   {
     id: "app_005",
-    jobTitle: "Frontend Engineer",
-    company: "Webfirst Labs",
-    status: "Interview" as const,
-    appliedDate: "Feb 10, 2024",
-    lastUpdate: "Feb 17, 2025",
-    score: 88,
+    jobId: "job_005",
+    jobTitle: "Product Designer & Developer",
+    company: "DesignHub",
+    status: "Rejected",
+    appliedDate: "Feb 5, 2025",
+    lastUpdate: "Feb 12, 2025",
+    resumeMatchScore: 65,
+    interviewScore: null,
   },
-
   {
-    id: "app_005",
-    jobTitle: "Frontend Engineer",
-    company: "Webfirst Labs",
-    status: "Offered" as const,
-    appliedDate: "Feb 10, 2024",
-    lastUpdate: "Feb 17, 2025",
-    score: 88,
-  },
-
-  {
-    id: "app_005",
-    jobTitle: "Frontend Engineer",
-    company: "Webfirst Labs",
-    status: "Rejected" as const,
-    appliedDate: "Feb 10, 2024",
-    lastUpdate: "Feb 17, 2025",
-    score: 88,
+    id: "app_006",
+    jobId: "job_001",
+    jobTitle: "Senior React Developer",
+    company: "TechCorp Inc.",
+    status: "Offered",
+    appliedDate: "Jan 20, 2025",
+    lastUpdate: "Feb 10, 2025",
+    resumeMatchScore: 95,
+    interviewScore: 92,
   },
 ];
 

@@ -5,7 +5,7 @@
 import ProgressBar from "@/components/ui/ProgressBar";
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +19,7 @@ const ANALYSIS_STEPS = [
 ];
 
 export default function InterviewProcessingScreen() {
+  const { jobId } = useLocalSearchParams<{ jobId: string }>();
   const [step, setStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const spinAnim = useRef(new Animated.Value(0)).current;
@@ -60,7 +61,15 @@ export default function InterviewProcessingScreen() {
       setStep((prev) => {
         if (prev >= ANALYSIS_STEPS.length - 1) {
           clearInterval(stepTimer);
-          setTimeout(() => router.replace("/interview-completed"), 800);
+          setTimeout(
+            () =>
+              router.replace(
+                jobId
+                  ? `/interview-completed?jobId=${jobId}`
+                  : "/interview-completed",
+              ),
+            800,
+          );
           return prev;
         }
         return prev + 1;

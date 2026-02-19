@@ -1,41 +1,80 @@
 /**
- * Interview Tab Screen — Entry point for the AI interview module.
- * Shows interview status, past interviews, and CTA to start new interview.
+ * Applications Tab Screen — Track all job applications through the pipeline.
+ * Shows application status, resume match scores, and interview scores.
+ * Flow: Apply → Resume Scored → Interview → Scored → Decision
  */
+import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
-import ThemedButton from "@/components/ui/ThemedButton";
-import { Colors, Shadows } from "@/constants/theme";
+import {
+  DUMMY_APPLICATIONS,
+  type ApplicationStatus,
+} from "@/constants/dummyData";
+import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Dummy past interview data
-const PAST_INTERVIEWS = [
-  {
-    id: "int_1",
-    date: "Feb 18, 2025",
-    role: "Senior Frontend Developer",
-    score: 87,
-    status: "Completed",
-    duration: "18 min",
-    questions: 5,
-  },
-  {
-    id: "int_2",
-    date: "Feb 10, 2025",
-    role: "Full Stack Engineer",
-    score: 72,
-    status: "Completed",
-    duration: "22 min",
-    questions: 5,
-  },
-];
+type FilterOption = "All" | "Active" | "Completed";
 
-export default function InterviewScreen() {
+const STATUS_BADGE: Record<
+  ApplicationStatus,
+  {
+    variant: "info" | "success" | "warning" | "danger" | "accent";
+    label: string;
+  }
+> = {
+  "Resume Submitted": { variant: "info", label: "Resume Submitted" },
+  "Resume Scoring": { variant: "info", label: "Scoring..." },
+  "Resume Scored": { variant: "accent", label: "Resume Scored" },
+  "Interview Pending": { variant: "warning", label: "Interview Pending" },
+  "Interview Completed": { variant: "success", label: "Interview Done" },
+  "Under Review": { variant: "info", label: "Under Review" },
+  Shortlisted: { variant: "success", label: "Shortlisted" },
+  Offered: { variant: "success", label: "Offered" },
+  Rejected: { variant: "danger", label: "Rejected" },
+};
+
+// Pipeline steps for visual indicator
+const PIPELINE_STEPS = ["Applied", "Resume Scored", "Interview", "Decision"];
+
+function getPipelineStage(status: ApplicationStatus): number {
+  switch (status) {
+    case "Resume Submitted":
+    case "Resume Scoring":
+      return 0;
+    case "Resume Scored":
+    case "Interview Pending":
+      return 1;
+    case "Interview Completed":
+    case "Under Review":
+      return 2;
+    case "Shortlisted":
+    case "Offered":
+    case "Rejected":
+      return 3;
+    default:
+      return 0;
+  }
+}
+
+export default function ApplicationsScreen() {
+  const [filter, setFilter] = useState<FilterOption>("All");
+
+  const filteredApps = DUMMY_APPLICATIONS.filter((app) => {
+    if (filter === "All") return true;
+    if (filter === "Active")
+      return !["Offered", "Rejected"].includes(app.status);
+    return ["Offered", "Rejected", "Interview Completed"].includes(app.status);
+  });
+
+  const activeCount = DUMMY_APPLICATIONS.filter(
+    (a) => !["Offered", "Rejected"].includes(a.status),
+  ).length;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
@@ -44,124 +83,206 @@ export default function InterviewScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
-        <Text style={styles.title}>AI Interview</Text>
+        <Text style={styles.title}>My Applications</Text>
         <Text style={styles.subtitle}>
-          Practice and get scored by our AI interviewer
+          Track your job applications through the pipeline
         </Text>
 
-        {/* Start Interview CTA */}
-        <View style={styles.ctaCard}>
-          <View style={styles.ctaIcon}>
-            <FontAwesome name="microphone" size={32} color={Colors.accent} />
+        {/* Stats row */}
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{DUMMY_APPLICATIONS.length}</Text>
+            <Text style={styles.statLabel}>Total</Text>
           </View>
-          <Text style={styles.ctaTitle}>Ready for Your Interview?</Text>
-          <Text style={styles.ctaDescription}>
-            Our AI will conduct a voice-based interview tailored to your
-            profile. Get instant scoring and actionable feedback.
-          </Text>
-          <View style={styles.ctaFeatures}>
-            <FeatureItem icon="clock-o" text="15–25 min session" />
-            <FeatureItem icon="question-circle" text="5 adaptive questions" />
-            <FeatureItem icon="bar-chart" text="Instant score & feedback" />
+          <View style={styles.statCard}>
+            <Text style={[styles.statValue, { color: Colors.secondary }]}>
+              {activeCount}
+            </Text>
+            <Text style={styles.statLabel}>Active</Text>
           </View>
-          <ThemedButton
-            title="Start New Interview"
-            onPress={() => router.push("/interview-instructions")}
-            variant="accent"
-            size="lg"
-            fullWidth
-            icon={<FontAwesome name="play" size={16} color="#FFF" />}
-          />
+          <View style={styles.statCard}>
+            <Text style={[styles.statValue, { color: Colors.success }]}>
+              {DUMMY_APPLICATIONS.filter((a) => a.status === "Offered").length}
+            </Text>
+            <Text style={styles.statLabel}>Offers</Text>
+          </View>
         </View>
 
-        {/* How It Works */}
-        <Text style={styles.sectionTitle}>How It Works</Text>
-        <View style={styles.stepsRow}>
-          <StepCard
-            number="1"
-            title="Prepare"
-            description="Review instructions & tips"
-          />
-          <StepCard
-            number="2"
-            title="Interview"
-            description="Answer AI voice questions"
-          />
-          <StepCard
-            number="3"
-            title="Results"
-            description="Get your score report"
-          />
-        </View>
-
-        {/* Past Interviews */}
-        <Text style={styles.sectionTitle}>Past Interviews</Text>
-        {PAST_INTERVIEWS.map((interview) => (
-          <Card
-            key={interview.id}
-            onPress={() => router.push("/score-summary")}
-            style={styles.interviewCard}
-          >
-            <View style={styles.interviewTop}>
-              <View>
-                <Text style={styles.interviewRole}>{interview.role}</Text>
-                <Text style={styles.interviewDate}>{interview.date}</Text>
-              </View>
-              <View style={styles.interviewScore}>
-                <Text style={styles.interviewScoreValue}>
-                  {interview.score}
-                </Text>
-                <Text style={styles.interviewScoreLabel}>/100</Text>
-              </View>
-            </View>
-            <View style={styles.interviewMeta}>
-              <Badge label={interview.status} variant="success" size="sm" />
-              <Text style={styles.metaText}>{interview.duration}</Text>
-              <Text style={styles.metaText}>
-                {interview.questions} questions
+        {/* Filter tabs */}
+        <View style={styles.filterRow}>
+          {(["All", "Active", "Completed"] as FilterOption[]).map((f) => (
+            <Pressable
+              key={f}
+              style={[styles.filterTab, filter === f && styles.filterTabActive]}
+              onPress={() => setFilter(f)}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  filter === f && styles.filterTextActive,
+                ]}
+              >
+                {f}
               </Text>
-            </View>
-          </Card>
-        ))}
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Application cards */}
+        {filteredApps.map((app) => {
+          const stage = getPipelineStage(app.status);
+          const badge = STATUS_BADGE[app.status];
+
+          return (
+            <Card
+              key={app.id}
+              onPress={() => router.push(`/application-status?id=${app.id}`)}
+              style={styles.appCard}
+            >
+              {/* Top row: company + status */}
+              <View style={styles.appTop}>
+                <View style={styles.appTopLeft}>
+                  <Avatar name={app.company} size={38} />
+                  <View style={styles.appInfo}>
+                    <Text style={styles.appTitle}>{app.jobTitle}</Text>
+                    <Text style={styles.appCompany}>{app.company}</Text>
+                  </View>
+                </View>
+                <Badge label={badge.label} variant={badge.variant} size="sm" />
+              </View>
+
+              {/* Pipeline progress */}
+              <View style={styles.pipeline}>
+                {PIPELINE_STEPS.map((step, i) => (
+                  <View key={i} style={styles.pipelineStep}>
+                    <View
+                      style={[
+                        styles.pipelineDot,
+                        i <= stage && styles.pipelineDotActive,
+                        i < stage && styles.pipelineDotComplete,
+                      ]}
+                    >
+                      {i < stage ? (
+                        <FontAwesome name="check" size={8} color="#FFF" />
+                      ) : null}
+                    </View>
+                    {i < PIPELINE_STEPS.length - 1 && (
+                      <View
+                        style={[
+                          styles.pipelineLine,
+                          i < stage && styles.pipelineLineActive,
+                        ]}
+                      />
+                    )}
+                  </View>
+                ))}
+              </View>
+              <View style={styles.pipelineLabels}>
+                {PIPELINE_STEPS.map((step, i) => (
+                  <Text
+                    key={i}
+                    style={[
+                      styles.pipelineLabel,
+                      i <= stage && styles.pipelineLabelActive,
+                    ]}
+                  >
+                    {step}
+                  </Text>
+                ))}
+              </View>
+
+              {/* Scores row */}
+              <View style={styles.scoresRow}>
+                <View style={styles.scoreItem}>
+                  <FontAwesome
+                    name="file-text-o"
+                    size={13}
+                    color={Colors.secondary}
+                  />
+                  <Text style={styles.scoreLabel}>Resume Match</Text>
+                  <Text
+                    style={[
+                      styles.scoreValue,
+                      app.resumeMatchScore !== null &&
+                        app.resumeMatchScore >= 70 && { color: Colors.success },
+                    ]}
+                  >
+                    {app.resumeMatchScore !== null
+                      ? `${app.resumeMatchScore}%`
+                      : "—"}
+                  </Text>
+                </View>
+                <View style={styles.scoreDivider} />
+                <View style={styles.scoreItem}>
+                  <FontAwesome
+                    name="microphone"
+                    size={13}
+                    color={Colors.accent}
+                  />
+                  <Text style={styles.scoreLabel}>Interview</Text>
+                  <Text
+                    style={[
+                      styles.scoreValue,
+                      app.interviewScore !== null &&
+                        app.interviewScore >= 70 && { color: Colors.success },
+                    ]}
+                  >
+                    {app.interviewScore !== null
+                      ? `${app.interviewScore}/100`
+                      : "—"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Date */}
+              <Text style={styles.appDate}>
+                Applied {app.appliedDate} • Updated {app.lastUpdate}
+              </Text>
+
+              {/* Action hint for pending interviews */}
+              {app.status === "Interview Pending" && (
+                <View style={styles.actionHint}>
+                  <FontAwesome
+                    name="play-circle"
+                    size={16}
+                    color={Colors.accent}
+                  />
+                  <Text style={styles.actionHintText}>
+                    Tap to start your AI interview
+                  </Text>
+                </View>
+              )}
+              {app.status === "Resume Scored" &&
+                app.resumeMatchScore !== null &&
+                app.resumeMatchScore >= 70 && (
+                  <View style={styles.actionHint}>
+                    <FontAwesome
+                      name="arrow-right"
+                      size={14}
+                      color={Colors.secondary}
+                    />
+                    <Text style={styles.actionHintText}>
+                      Eligible for AI interview — proceed when ready
+                    </Text>
+                  </View>
+                )}
+            </Card>
+          );
+        })}
+
+        {filteredApps.length === 0 && (
+          <View style={styles.emptyState}>
+            <FontAwesome name="inbox" size={40} color={Colors.border} />
+            <Text style={styles.emptyText}>No applications found</Text>
+            <Text style={styles.emptySubtext}>
+              Browse jobs and apply to get started
+            </Text>
+          </View>
+        )}
 
         <View style={{ height: 24 }} />
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function FeatureItem({
-  icon,
-  text,
-}: {
-  icon: React.ComponentProps<typeof FontAwesome>["name"];
-  text: string;
-}) {
-  return (
-    <View style={styles.featureItem}>
-      <FontAwesome name={icon} size={14} color={Colors.secondary} />
-      <Text style={styles.featureText}>{text}</Text>
-    </View>
-  );
-}
-
-function StepCard({
-  number,
-  title,
-  description,
-}: {
-  number: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <View style={styles.stepCard}>
-      <View style={styles.stepNumber}>
-        <Text style={styles.stepNumberText}>{number}</Text>
-      </View>
-      <Text style={styles.stepTitle}>{title}</Text>
-      <Text style={styles.stepDesc}>{description}</Text>
-    </View>
   );
 }
 
@@ -174,99 +295,133 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     marginBottom: 4,
   },
-  subtitle: { fontSize: 14, color: Colors.text.secondary, marginBottom: 20 },
-  // ── CTA Card
-  ctaCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 24,
-    alignItems: "center",
-    marginBottom: 28,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    ...Shadows.md,
-  },
-  ctaIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: `${Colors.accent}12`,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  ctaTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: Colors.primary,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  ctaDescription: {
-    fontSize: 14,
-    color: Colors.text.secondary,
-    textAlign: "center",
-    lineHeight: 21,
-    marginBottom: 16,
-  },
-  ctaFeatures: { width: "100%", gap: 8, marginBottom: 20 },
-  featureItem: { flexDirection: "row", alignItems: "center", gap: 8 },
-  featureText: { fontSize: 13, color: Colors.text.secondary },
-  // ── Steps
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Colors.text.primary,
-    marginBottom: 14,
-  },
-  stepsRow: { flexDirection: "row", gap: 10, marginBottom: 28 },
-  stepCard: {
+  subtitle: { fontSize: 14, color: Colors.text.secondary, marginBottom: 16 },
+  // Stats
+  statsRow: { flexDirection: "row", gap: 10, marginBottom: 16 },
+  statCard: {
     flex: 1,
+    alignItems: "center",
+    padding: 14,
     backgroundColor: Colors.surface,
     borderRadius: 12,
-    padding: 14,
-    alignItems: "center",
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  stepNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.primary,
+  statValue: { fontSize: 22, fontWeight: "700", color: Colors.text.primary },
+  statLabel: { fontSize: 11, color: Colors.muted, marginTop: 2 },
+  // Filters
+  filterRow: {
+    flexDirection: "row",
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    padding: 3,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  filterTab: {
+    flex: 1,
+    paddingVertical: 8,
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
+    borderRadius: 8,
   },
-  stepNumberText: { fontSize: 14, fontWeight: "700", color: "#FFF" },
-  stepTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: Colors.text.primary,
-    marginBottom: 4,
-  },
-  stepDesc: { fontSize: 11, color: Colors.text.secondary, textAlign: "center" },
-  // ── Past Interviews
-  interviewCard: { marginBottom: 12 },
-  interviewTop: {
+  filterTabActive: { backgroundColor: Colors.primary },
+  filterText: { fontSize: 13, fontWeight: "500", color: Colors.text.secondary },
+  filterTextActive: { color: "#FFF", fontWeight: "600" },
+  // App cards
+  appCard: { marginBottom: 14 },
+  appTop: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 10,
+    marginBottom: 14,
   },
-  interviewRole: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: Colors.text.primary,
+  appTopLeft: { flexDirection: "row", alignItems: "center", gap: 10, flex: 1 },
+  appInfo: { flex: 1 },
+  appTitle: { fontSize: 15, fontWeight: "600", color: Colors.text.primary },
+  appCompany: { fontSize: 13, color: Colors.text.secondary, marginTop: 1 },
+  // Pipeline
+  pipeline: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+    paddingHorizontal: 4,
   },
-  interviewDate: { fontSize: 12, color: Colors.muted, marginTop: 2 },
-  interviewScore: { flexDirection: "row", alignItems: "baseline" },
-  interviewScoreValue: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: Colors.success,
+  pipelineStep: { flexDirection: "row", alignItems: "center", flex: 1 },
+  pipelineDot: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    backgroundColor: Colors.background,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  interviewScoreLabel: { fontSize: 12, color: Colors.muted },
-  interviewMeta: { flexDirection: "row", alignItems: "center", gap: 12 },
-  metaText: { fontSize: 12, color: Colors.text.secondary },
+  pipelineDotActive: { borderColor: Colors.secondary },
+  pipelineDotComplete: {
+    backgroundColor: Colors.secondary,
+    borderColor: Colors.secondary,
+  },
+  pipelineLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: Colors.border,
+  },
+  pipelineLineActive: { backgroundColor: Colors.secondary },
+  pipelineLabels: {
+    flexDirection: "row",
+    marginBottom: 12,
+    paddingHorizontal: 0,
+  },
+  pipelineLabel: {
+    flex: 1,
+    fontSize: 9,
+    color: Colors.muted,
+    textAlign: "center",
+  },
+  pipelineLabelActive: { color: Colors.text.secondary, fontWeight: "500" },
+  // Scores
+  scoresRow: {
+    flexDirection: "row",
+    backgroundColor: `${Colors.secondary}06`,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+  },
+  scoreItem: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  scoreLabel: { fontSize: 12, color: Colors.text.secondary, flex: 1 },
+  scoreValue: { fontSize: 14, fontWeight: "700", color: Colors.text.primary },
+  scoreDivider: {
+    width: 1,
+    backgroundColor: Colors.border,
+    marginHorizontal: 8,
+  },
+  appDate: { fontSize: 11, color: Colors.muted },
+  actionHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: `${Colors.accent}08`,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: `${Colors.accent}18`,
+  },
+  actionHintText: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "500",
+    color: Colors.accent,
+  },
+  // Empty
+  emptyState: { alignItems: "center", paddingVertical: 40, gap: 8 },
+  emptyText: { fontSize: 16, fontWeight: "600", color: Colors.text.primary },
+  emptySubtext: { fontSize: 13, color: Colors.muted },
 });

@@ -7,6 +7,7 @@ import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 import ProgressBar from "@/components/ui/ProgressBar";
 import {
+  DUMMY_APPLICATIONS,
   DUMMY_JOBS,
   DUMMY_NOTIFICATIONS,
   DUMMY_SCORES,
@@ -91,16 +92,16 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.quickActions}>
           <QuickActionCard
-            icon="microphone"
-            label="Start Interview"
+            icon="briefcase"
+            label="Browse Jobs"
             color={Colors.accent}
-            onPress={() => router.push("/interview-instructions")}
+            onPress={() => router.push("/(tabs)/jobs")}
           />
           <QuickActionCard
-            icon="file-text-o"
-            label="Upload Resume"
+            icon="list-alt"
+            label="My Applications"
             color={Colors.secondary}
-            onPress={() => router.push("/resume-upload")}
+            onPress={() => router.push("/(tabs)/interview")}
           />
           <QuickActionCard
             icon="bar-chart"
@@ -157,6 +158,59 @@ export default function HomeScreen() {
             />
           </Pressable>
         </Card>
+
+        {/* ── Active Applications ── */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Active Applications</Text>
+          <Pressable onPress={() => router.push("/(tabs)/interview")}>
+            <Text style={styles.seeAll}>See All</Text>
+          </Pressable>
+        </View>
+        {DUMMY_APPLICATIONS.filter(
+          (a) => !["Offered", "Rejected"].includes(a.status),
+        )
+          .slice(0, 2)
+          .map((app) => (
+            <Card
+              key={app.id}
+              onPress={() => router.push(`/application-status?id=${app.id}`)}
+              style={styles.jobCard}
+            >
+              <View style={styles.jobHeader}>
+                <View style={styles.jobInfo}>
+                  <Text style={styles.jobTitle}>{app.jobTitle}</Text>
+                  <Text style={styles.jobCompany}>{app.company}</Text>
+                </View>
+                <Badge
+                  label={app.status}
+                  variant={
+                    app.status === "Interview Pending"
+                      ? "warning"
+                      : app.status === "Interview Completed"
+                        ? "success"
+                        : "info"
+                  }
+                  size="sm"
+                />
+              </View>
+              <View style={styles.jobTags}>
+                {app.resumeMatchScore !== null && (
+                  <Badge
+                    label={`Match: ${app.resumeMatchScore}%`}
+                    variant="secondary"
+                    size="sm"
+                  />
+                )}
+                {app.interviewScore !== null && (
+                  <Badge
+                    label={`Interview: ${app.interviewScore}/100`}
+                    variant="accent"
+                    size="sm"
+                  />
+                )}
+              </View>
+            </Card>
+          ))}
 
         {/* ── Recommended Jobs ── */}
         <View style={styles.sectionHeader}>

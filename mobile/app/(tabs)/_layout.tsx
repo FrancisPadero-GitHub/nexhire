@@ -1,6 +1,6 @@
 /**
  * Tab Layout — Bottom tab navigator for the main app sections.
- * 5 tabs: Home, Jobs, Interview (center CTA), Profile, Settings
+ * 5 tabs: Home, Jobs, Applications (center CTA), Profile, Settings
  */
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
@@ -57,10 +57,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="interview"
         options={{
-          title: "Interview",
+          title: "Applications",
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.centerTab}>
-              <FontAwesome name="microphone" size={24} color="#FFF" />
+              <FontAwesome name="list-alt" size={24} color="#FFF" />
             </View>
           ),
           tabBarLabel: () => null, // Hide label for center CTA
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     padding: 1,
     marginBottom: -2,
   },
-  // Elevated center interview button
+  // Elevated center applications button
   centerTab: {
     width: 56,
     height: 56,

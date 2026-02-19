@@ -3,14 +3,17 @@
  * Confirms completion and offers navigation to results.
  */
 import ThemedButton from "@/components/ui/ThemedButton";
+import { DUMMY_JOBS } from "@/constants/dummyData";
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function InterviewCompletedScreen() {
+  const { jobId } = useLocalSearchParams<{ jobId: string }>();
+  const job = jobId ? DUMMY_JOBS.find((j) => j.id === jobId) : null;
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -35,8 +38,9 @@ export default function InterviewCompletedScreen() {
 
         <Text style={styles.title}>Interview Complete!</Text>
         <Text style={styles.subtitle}>
-          Great job! Your AI interview has been completed and scored. Here's a
-          quick summary:
+          {job
+            ? `Great job! Your AI interview for ${job.title} at ${job.company} has been completed and scored.`
+            : "Great job! Your AI interview has been completed and scored. Here's a quick summary:"}
         </Text>
 
         {/* Quick stats */}
@@ -68,7 +72,11 @@ export default function InterviewCompletedScreen() {
         <View style={styles.actions}>
           <ThemedButton
             title="View Full Results"
-            onPress={() => router.replace("/score-summary")}
+            onPress={() =>
+              router.replace(
+                jobId ? `/score-summary?jobId=${jobId}` : "/score-summary",
+              )
+            }
             fullWidth
             size="lg"
             icon={<FontAwesome name="bar-chart" size={16} color="#FFF" />}

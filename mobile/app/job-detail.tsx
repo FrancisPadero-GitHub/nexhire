@@ -9,22 +9,20 @@ import ThemedButton from "@/components/ui/ThemedButton";
 import { DUMMY_JOBS } from "@/constants/dummyData";
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function JobDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const job = DUMMY_JOBS.find((j) => j.id === id) || DUMMY_JOBS[0];
   const [saved, setSaved] = useState(false);
 
   const handleApply = () => {
-    Alert.alert(
-      "Application Submitted",
-      `Your application for ${job.title} has been sent!`,
-      [{ text: "OK" }],
-    );
+    // Navigate to resume upload with the job context
+    router.push(`/resume-upload?jobId=${job.id}`);
   };
 
   return (

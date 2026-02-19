@@ -1,18 +1,23 @@
 /**
  * Resume Upload Screen — Select and upload resume with drag/drop style UI.
- * Supports PDF/DOC/DOCX with progress indication.
+ * Now job-aware: shows the job you're applying for and passes jobId forward.
  */
+import Avatar from "@/components/ui/Avatar";
 import Header from "@/components/ui/Header";
 import ProgressBar from "@/components/ui/ProgressBar";
 import ThemedButton from "@/components/ui/ThemedButton";
+import { DUMMY_JOBS } from "@/constants/dummyData";
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ResumeUploadScreen() {
+  const { jobId } = useLocalSearchParams<{ jobId: string }>();
+  const job = jobId ? DUMMY_JOBS.find((j) => j.id === jobId) : null;
+
   const [selectedFile, setSelectedFile] = useState<{
     name: string;
     size: string;
@@ -36,8 +41,14 @@ export default function ResumeUploadScreen() {
         if (prev >= 100) {
           clearInterval(interval);
           setUploading(false);
-          // Navigate to parsing screen after upload
-          setTimeout(() => router.push("/resume-parsing"), 300);
+          // Navigate to parsing/scoring screen with job context
+          setTimeout(
+            () =>
+              router.push(
+                jobId ? `/resume-parsing?jobId=${jobId}` : "/resume-parsing",
+              ),
+            300,
+          );
           return 100;
         }
         return prev + 10;
@@ -53,7 +64,22 @@ export default function ResumeUploadScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header title="Upload Resume" />
-      <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Job context banner */}
+        {job && (
+          <View style={styles.jobBanner}>
+            <Avatar name={job.company} size={40} />
+            <View style={styles.jobBannerInfo}>
+              <Text style={styles.jobBannerLabel}>Applying for</Text>
+              <Text style={styles.jobBannerTitle}>{job.title}</Text>
+              <Text style={styles.jobBannerCompany}>{job.company}</Text>
+            </View>
+          </View>
+        )}
+
         {/* Upload area */}
         <Pressable
           style={[styles.uploadZone, selectedFile && styles.uploadZoneActive]}
@@ -131,8 +157,6 @@ export default function ResumeUploadScreen() {
           </View>
         </View>
 
-        <View style={styles.spacer} />
-
         {/* Upload button */}
         <ThemedButton
           title={uploading ? "Uploading..." : "Upload & Parse Resume"}
@@ -143,14 +167,35 @@ export default function ResumeUploadScreen() {
           size="lg"
           variant="secondary"
         />
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
-  container: { flex: 1, paddingHorizontal: 20 },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 32, flexGrow: 1 },
+  jobBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    backgroundColor: `${Colors.primary}08`,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: `${Colors.primary}20`,
+    marginBottom: 20,
+    marginTop: 4,
+  },
+  jobBannerInfo: { flex: 1 },
+  jobBannerLabel: { fontSize: 11, color: Colors.muted, fontWeight: "500" },
+  jobBannerTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: Colors.text.primary,
+    marginTop: 1,
+  },
+  jobBannerCompany: { fontSize: 13, color: Colors.text.secondary },
   uploadZone: {
     borderWidth: 2,
     borderColor: Colors.border,
@@ -234,5 +279,4 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   tipsText: { fontSize: 12, color: Colors.text.secondary, lineHeight: 20 },
-  spacer: { flex: 1 },
 });

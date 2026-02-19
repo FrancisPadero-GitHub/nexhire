@@ -1,25 +1,43 @@
 /**
  * Resume Parsing Screen — AI analysis animation while parsing resume.
- * Shows a loading state with pulsing animation, then auto-navigates to preview.
+ * When jobId is provided, also matches resume against job requirements.
+ * Navigates to application-match (job flow) or resume-preview (standalone).
  */
 import ProgressBar from "@/components/ui/ProgressBar";
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const PARSING_STEPS = [
+const BASE_STEPS = [
   "Extracting text content...",
   "Identifying skills & keywords...",
   "Analyzing work experience...",
   "Evaluating education...",
   "Generating profile summary...",
+];
+
+const JOB_MATCH_STEPS = [
+  "Comparing skills to job requirements...",
+  "Evaluating experience relevance...",
+  "Calculating match score...",
   "Finalizing results...",
 ];
 
 export default function ResumeParsingScreen() {
+  const { jobId } = useLocalSearchParams<{ jobId: string }>();
+  const isJobFlow = !!jobId;
+
+  const PARSING_STEPS = useMemo(
+    () =>
+      isJobFlow
+        ? [...BASE_STEPS, ...JOB_MATCH_STEPS]
+        : [...BASE_STEPS, "Finalizing results..."],
+    [isJobFlow],
+  );
+
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -59,25 +77,35 @@ export default function ResumeParsingScreen() {
 
   // Simulate parsing progress
   useEffect(() => {
+    const totalSteps = PARSING_STEPS.length;
+    const stepDuration = 1200;
+
     const stepInterval = setInterval(() => {
       setCurrentStep((prev) => {
-        if (prev >= PARSING_STEPS.length - 1) {
+        if (prev >= totalSteps - 1) {
           clearInterval(stepInterval);
-          // Navigate to preview after parsing
-          setTimeout(() => router.replace("/resume-preview"), 500);
+          // Navigate based on flow
+          setTimeout(() => {
+            if (isJobFlow) {
+              router.replace(`/application-match?jobId=${jobId}`);
+            } else {
+              router.replace("/resume-preview");
+            }
+          }, 500);
           return prev;
         }
         return prev + 1;
       });
-    }, 1200);
+    }, stepDuration);
 
+    const totalDuration = totalSteps * stepDuration;
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(progressInterval);
           return 100;
         }
-        return prev + 2;
+        return prev + 100 / (totalDuration / 120);
       });
     }, 120);
 
@@ -85,7 +113,7 @@ export default function ResumeParsingScreen() {
       clearInterval(stepInterval);
       clearInterval(progressInterval);
     };
-  }, []);
+  }, [PARSING_STEPS.length, isJobFlow, jobId]);
 
   const spin = rotateAnim.interpolate({
     inputRange: [0, 1],
@@ -109,9 +137,13 @@ export default function ResumeParsingScreen() {
           </Animated.View>
         </Animated.View>
 
-        <Text style={styles.title}>Analyzing Your Resume</Text>
+        <Text style={styles.title}>
+          {isJobFlow ? "Analyzing & Matching" : "Analyzing Your Resume"}
+        </Text>
         <Text style={styles.subtitle}>
-          Our AI is parsing and extracting key information from your resume.
+          {isJobFlow
+            ? "Our AI is parsing your resume and matching it against the job requirements."
+            : "Our AI is parsing and extracting key information from your resume."}
         </Text>
 
         {/* Progress bar */}

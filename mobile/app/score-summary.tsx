@@ -2,19 +2,22 @@
  * Score Summary Screen — Overall interview score with category breakdown.
  * Displays the main ScoreGauge and per-category mini progress bars.
  */
+import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
 import Header from "@/components/ui/Header";
 import ScoreGauge from "@/components/ui/ScoreGauge";
 import ThemedButton from "@/components/ui/ThemedButton";
-import { DUMMY_SCORES } from "@/constants/dummyData";
+import { DUMMY_JOBS, DUMMY_SCORES } from "@/constants/dummyData";
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ScoreSummaryScreen() {
+  const { jobId } = useLocalSearchParams<{ jobId: string }>();
+  const job = jobId ? DUMMY_JOBS.find((j) => j.id === jobId) : null;
   const { overall, categories, recommendedRoles } = DUMMY_SCORES;
 
   // Determine score tier
@@ -42,6 +45,18 @@ export default function ScoreSummaryScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
+        {/* Job context */}
+        {job && (
+          <View style={styles.jobBanner}>
+            <Avatar name={job.company} size={40} />
+            <View style={styles.jobBannerInfo}>
+              <Text style={styles.jobBannerLabel}>Interview Score for</Text>
+              <Text style={styles.jobBannerTitle}>{job.title}</Text>
+              <Text style={styles.jobBannerCompany}>{job.company}</Text>
+            </View>
+          </View>
+        )}
+
         {/* Main score gauge */}
         <View style={styles.gaugeContainer}>
           <ScoreGauge score={overall} size={180} strokeWidth={12} />
@@ -133,6 +148,27 @@ export default function ScoreSummaryScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
+  jobBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    backgroundColor: `${Colors.accent}08`,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: `${Colors.accent}20`,
+    marginBottom: 4,
+    marginTop: 4,
+  },
+  jobBannerInfo: { flex: 1 },
+  jobBannerLabel: { fontSize: 11, color: Colors.muted, fontWeight: "500" },
+  jobBannerTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: Colors.text.primary,
+    marginTop: 1,
+  },
+  jobBannerCompany: { fontSize: 13, color: Colors.text.secondary },
   gaugeContainer: { alignItems: "center", paddingVertical: 24 },
   tierBadge: {
     paddingHorizontal: 16,

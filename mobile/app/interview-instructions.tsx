@@ -2,11 +2,13 @@
  * Interview Instructions Screen — Pre-interview preparation guide.
  * Shows tips, requirements, and mic permission check before starting.
  */
+import Avatar from "@/components/ui/Avatar";
 import Header from "@/components/ui/Header";
 import ThemedButton from "@/components/ui/ThemedButton";
+import { DUMMY_JOBS } from "@/constants/dummyData";
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -19,6 +21,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function InterviewInstructionsScreen() {
+  const { jobId } = useLocalSearchParams<{ jobId: string }>();
+  const job = jobId ? DUMMY_JOBS.find((j) => j.id === jobId) : null;
   const [micGranted, setMicGranted] = useState(false);
 
   // Simulate requesting microphone permission
@@ -38,7 +42,7 @@ export default function InterviewInstructionsScreen() {
       requestMicPermission();
       return;
     }
-    router.push("/interview-live");
+    router.push(jobId ? `/interview-live?jobId=${jobId}` : "/interview-live");
   };
 
   return (
@@ -48,6 +52,18 @@ export default function InterviewInstructionsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
+        {/* Job context banner */}
+        {job && (
+          <View style={styles.jobBanner}>
+            <Avatar name={job.company} size={40} />
+            <View style={styles.jobBannerInfo}>
+              <Text style={styles.jobBannerLabel}>Interview for</Text>
+              <Text style={styles.jobBannerTitle}>{job.title}</Text>
+              <Text style={styles.jobBannerCompany}>{job.company}</Text>
+            </View>
+          </View>
+        )}
+
         {/* Hero section */}
         <View style={styles.hero}>
           <View style={styles.heroIcon}>
@@ -55,8 +71,9 @@ export default function InterviewInstructionsScreen() {
           </View>
           <Text style={styles.heroTitle}>AI Voice Interview</Text>
           <Text style={styles.heroSubtitle}>
-            You'll answer 5 questions asked by our AI interviewer. Take your
-            time and speak clearly.
+            {job
+              ? `You'll answer 5 questions tailored to the ${job.title} position. Take your time and speak clearly.`
+              : "You'll answer 5 questions asked by our AI interviewer. Take your time and speak clearly."}
           </Text>
         </View>
 
@@ -203,6 +220,27 @@ function TipItem({
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 32 },
+  jobBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    backgroundColor: `${Colors.accent}08`,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: `${Colors.accent}20`,
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  jobBannerInfo: { flex: 1 },
+  jobBannerLabel: { fontSize: 11, color: Colors.muted, fontWeight: "500" },
+  jobBannerTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: Colors.text.primary,
+    marginTop: 1,
+  },
+  jobBannerCompany: { fontSize: 13, color: Colors.text.secondary },
   hero: { alignItems: "center", paddingVertical: 24 },
   heroIcon: {
     width: 80,

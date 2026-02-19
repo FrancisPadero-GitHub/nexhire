@@ -1,194 +1,372 @@
 /**
- * Application Status Screen — Track submitted job applications.
+ * Application Status Screen — Detailed view of a single application.
+ * Shows pipeline progress, resume match, interview score, and actions.
  */
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
 import Header from "@/components/ui/Header";
-import { DUMMY_APPLICATIONS } from "@/constants/dummyData";
+import ProgressBar from "@/components/ui/ProgressBar";
+import ThemedButton from "@/components/ui/ThemedButton";
+import {
+  DUMMY_APPLICATIONS,
+  DUMMY_JOBS,
+  type ApplicationStatus as AppStatus,
+} from "@/constants/dummyData";
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const statusConfig: Record<
-  string,
+const STATUS_BADGE: Record<
+  AppStatus,
   {
-    color: string;
-    icon: React.ComponentProps<typeof FontAwesome>["name"];
-    variant: React.ComponentProps<typeof Badge>["variant"];
+    variant: "info" | "success" | "warning" | "danger" | "accent";
+    label: string;
   }
 > = {
-  Applied: { color: Colors.secondary, icon: "paper-plane", variant: "accent" },
-  "Under Review": { color: Colors.warning, icon: "eye", variant: "warning" },
-  Interview: {
-    color: Colors.success,
-    icon: "calendar-check-o",
-    variant: "success",
-  },
-  Rejected: { color: Colors.danger, icon: "times-circle", variant: "danger" },
-  Offered: { color: Colors.success, icon: "check-circle", variant: "success" },
+  "Resume Submitted": { variant: "info", label: "Resume Submitted" },
+  "Resume Scoring": { variant: "info", label: "Scoring..." },
+  "Resume Scored": { variant: "accent", label: "Resume Scored" },
+  "Interview Pending": { variant: "warning", label: "Interview Pending" },
+  "Interview Completed": { variant: "success", label: "Interview Done" },
+  "Under Review": { variant: "info", label: "Under Review" },
+  Shortlisted: { variant: "success", label: "Shortlisted" },
+  Offered: { variant: "success", label: "Offered" },
+  Rejected: { variant: "danger", label: "Rejected" },
 };
 
-export default function ApplicationStatusScreen() {
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <Header title="My Applications" />
-      <FlatList
-        data={DUMMY_APPLICATIONS}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        ListHeaderComponent={
-          <View style={styles.summary}>
-            <Text style={styles.summaryText}>
-              {DUMMY_APPLICATIONS.length} application
-              {DUMMY_APPLICATIONS.length !== 1 ? "s" : ""} submitted
-            </Text>
-          </View>
-        }
-        renderItem={({ item }) => {
-          const config = statusConfig[item.status] || statusConfig.Applied;
-          return (
-            <View style={styles.card}>
-              {/* Header row */}
-              <View style={styles.cardHeader}>
-                <Avatar name={item.company} size={42} />
-                <View style={styles.cardInfo}>
-                  <Text style={styles.jobTitle}>{item.jobTitle}</Text>
-                  <Text style={styles.company}>{item.company}</Text>
-                </View>
-                <Badge
-                  label={item.status}
-                  variant={config.variant}
-                  size="sm"
-                />
-              </View>
+const PIPELINE = [
+  { key: "applied", label: "Applied" },
+  { key: "resume_scored", label: "Resume Scored" },
+  { key: "interview", label: "Interview" },
+  { key: "decision", label: "Decision" },
+];
 
-              {/* Timeline */}
-              <View style={styles.timeline}>
-                <TimelineStep
-                  label="Applied"
-                  date={item.appliedDate}
-                  active
-                  completed
-                />
-                <TimelineStep
-                  label="Reviewed"
-                  date={item.status !== "Applied" ? "In progress" : undefined}
-                  active={item.status !== "Applied"}
-                  completed={["Interview", "Offered"].includes(item.status)}
-                />
-                <TimelineStep
-                  label="Interview"
-                  date={item.status === "Interview" ? "Scheduled" : undefined}
-                  active={
-                    item.status === "Interview" || item.status === "Offered"
-                  }
-                  completed={item.status === "Offered"}
-                />
-                <TimelineStep
-                  label="Decision"
-                  active={
-                    item.status === "Offered" || item.status === "Rejected"
-                  }
-                  completed={item.status === "Offered"}
-                  isLast
-                />
-              </View>
-            </View>
-          );
-        }}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <FontAwesome name="folder-open-o" size={40} color={Colors.border} />
-            <Text style={styles.emptyText}>No applications yet</Text>
-          </View>
-        }
-      />
-    </SafeAreaView>
-  );
+function getStage(status: AppStatus): number {
+  switch (status) {
+    case "Resume Submitted":
+    case "Resume Scoring":
+      return 0;
+    case "Resume Scored":
+    case "Interview Pending":
+      return 1;
+    case "Interview Completed":
+    case "Under Review":
+      return 2;
+    case "Shortlisted":
+    case "Offered":
+    case "Rejected":
+      return 3;
+    default:
+      return 0;
+  }
 }
 
-function TimelineStep({
-  label,
-  date,
-  active = false,
-  completed = false,
-  isLast = false,
-}: {
-  label: string;
-  date?: string;
-  active?: boolean;
-  completed?: boolean;
-  isLast?: boolean;
-}) {
+export default function ApplicationStatusScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const app =
+    DUMMY_APPLICATIONS.find((a) => a.id === id) || DUMMY_APPLICATIONS[0];
+  const job = DUMMY_JOBS.find((j) => j.id === app.jobId);
+  const stage = getStage(app.status);
+  const badge = STATUS_BADGE[app.status];
+
+  const handleStartInterview = () => {
+    router.push(`/interview-instructions?jobId=${app.jobId}`);
+  };
+
+  const handleViewMatchResults = () => {
+    router.push(`/application-match?jobId=${app.jobId}`);
+  };
+
+  const handleViewInterviewScore = () => {
+    router.push(`/score-summary?jobId=${app.jobId}`);
+  };
+
   return (
-    <View style={styles.stepContainer}>
-      <View style={styles.stepDotCol}>
-        <View
-          style={[
-            styles.stepDot,
-            active && styles.stepDotActive,
-            completed && styles.stepDotCompleted,
-          ]}
-        >
-          {completed && <FontAwesome name="check" size={8} color="#FFF" />}
+    <SafeAreaView style={styles.safeArea}>
+      <Header title="Application Status" />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Job + status header */}
+        <View style={styles.jobCard}>
+          <Avatar name={app.company} size={48} />
+          <View style={styles.jobInfo}>
+            <Text style={styles.jobTitle}>{app.jobTitle}</Text>
+            <Text style={styles.jobCompany}>{app.company}</Text>
+          </View>
+          <Badge label={badge.label} variant={badge.variant} size="sm" />
         </View>
-        {!isLast && (
-          <View style={[styles.stepLine, active && styles.stepLineActive]} />
-        )}
-      </View>
-      <View style={styles.stepInfo}>
-        <Text style={[styles.stepLabel, active && styles.stepLabelActive]}>
-          {label}
-        </Text>
-        {date && <Text style={styles.stepDate}>{date}</Text>}
-      </View>
-    </View>
+
+        {/* Pipeline timeline */}
+        <Text style={styles.sectionTitle}>Application Pipeline</Text>
+        <View style={styles.pipelineCard}>
+          {PIPELINE.map((step, i) => (
+            <View key={step.key} style={styles.stepContainer}>
+              <View style={styles.stepDotCol}>
+                <View
+                  style={[
+                    styles.stepDot,
+                    i <= stage && styles.stepDotActive,
+                    i < stage && styles.stepDotCompleted,
+                  ]}
+                >
+                  {i < stage && (
+                    <FontAwesome name="check" size={8} color="#FFF" />
+                  )}
+                </View>
+                {i < PIPELINE.length - 1 && (
+                  <View
+                    style={[
+                      styles.stepLine,
+                      i < stage && styles.stepLineActive,
+                    ]}
+                  />
+                )}
+              </View>
+              <View style={styles.stepInfo}>
+                <Text
+                  style={[
+                    styles.stepLabel,
+                    i <= stage && styles.stepLabelActive,
+                  ]}
+                >
+                  {step.label}
+                </Text>
+                {i === 0 && (
+                  <Text style={styles.stepDate}>{app.appliedDate}</Text>
+                )}
+                {i === stage && i > 0 && (
+                  <Text style={styles.stepDate}>{app.lastUpdate}</Text>
+                )}
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* Resume Match Score */}
+        <Text style={styles.sectionTitle}>Resume Match</Text>
+        <View style={styles.scoreCard}>
+          <View style={styles.scoreRow}>
+            <FontAwesome
+              name="file-text-o"
+              size={20}
+              color={Colors.secondary}
+            />
+            <Text style={styles.scoreLabel}>Resume vs Job Match</Text>
+            <Text
+              style={[
+                styles.scoreValue,
+                app.resumeMatchScore !== null &&
+                  app.resumeMatchScore >= 70 && { color: Colors.success },
+              ]}
+            >
+              {app.resumeMatchScore !== null
+                ? `${app.resumeMatchScore}%`
+                : "Pending"}
+            </Text>
+          </View>
+          {app.resumeMatchScore !== null && (
+            <ProgressBar
+              progress={app.resumeMatchScore}
+              color={
+                app.resumeMatchScore >= 80
+                  ? Colors.success
+                  : app.resumeMatchScore >= 60
+                    ? Colors.secondary
+                    : Colors.warning
+              }
+              height={6}
+            />
+          )}
+        </View>
+
+        {/* Interview Score */}
+        <Text style={styles.sectionTitle}>Interview Score</Text>
+        <View style={styles.scoreCard}>
+          <View style={styles.scoreRow}>
+            <FontAwesome name="microphone" size={20} color={Colors.accent} />
+            <Text style={styles.scoreLabel}>AI Interview Score</Text>
+            <Text
+              style={[
+                styles.scoreValue,
+                app.interviewScore !== null &&
+                  app.interviewScore >= 70 && { color: Colors.success },
+              ]}
+            >
+              {app.interviewScore !== null
+                ? `${app.interviewScore}/100`
+                : "Pending"}
+            </Text>
+          </View>
+          {app.interviewScore !== null && (
+            <ProgressBar
+              progress={app.interviewScore}
+              color={
+                app.interviewScore >= 80
+                  ? Colors.success
+                  : app.interviewScore >= 60
+                    ? Colors.secondary
+                    : Colors.warning
+              }
+              height={6}
+            />
+          )}
+        </View>
+
+        {/* Dates */}
+        <View style={styles.datesCard}>
+          <View style={styles.dateRow}>
+            <FontAwesome name="calendar" size={14} color={Colors.muted} />
+            <Text style={styles.dateLabel}>Applied</Text>
+            <Text style={styles.dateValue}>{app.appliedDate}</Text>
+          </View>
+          <View style={styles.dateDivider} />
+          <View style={styles.dateRow}>
+            <FontAwesome name="refresh" size={14} color={Colors.muted} />
+            <Text style={styles.dateLabel}>Last Updated</Text>
+            <Text style={styles.dateValue}>{app.lastUpdate}</Text>
+          </View>
+        </View>
+
+        {/* Actions based on status */}
+        <View style={styles.actions}>
+          {(app.status === "Resume Scored" ||
+            app.status === "Interview Pending") &&
+            app.resumeMatchScore !== null &&
+            app.resumeMatchScore >= 70 && (
+              <ThemedButton
+                title="Start AI Interview"
+                onPress={handleStartInterview}
+                fullWidth
+                size="lg"
+                variant="accent"
+                icon={<FontAwesome name="microphone" size={16} color="#FFF" />}
+              />
+            )}
+          {app.resumeMatchScore !== null && (
+            <ThemedButton
+              title="View Match Details"
+              onPress={handleViewMatchResults}
+              variant="outline"
+              fullWidth
+            />
+          )}
+          {app.interviewScore !== null && (
+            <ThemedButton
+              title="View Interview Results"
+              onPress={handleViewInterviewScore}
+              variant="secondary"
+              fullWidth
+              icon={<FontAwesome name="bar-chart" size={14} color="#FFF" />}
+            />
+          )}
+          <ThemedButton
+            title="Back to Applications"
+            onPress={() => router.push("/(tabs)/interview")}
+            variant="ghost"
+            fullWidth
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
-  list: { paddingHorizontal: 20, paddingBottom: 24 },
-  summary: { paddingVertical: 12 },
-  summaryText: { fontSize: 13, color: Colors.muted, fontWeight: "500" },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    marginBottom: 12,
-  },
-  cardHeader: {
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
+  jobCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    padding: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: 20,
+    marginTop: 4,
+  },
+  jobInfo: { flex: 1 },
+  jobTitle: { fontSize: 16, fontWeight: "700", color: Colors.text.primary },
+  jobCompany: { fontSize: 13, color: Colors.text.secondary, marginTop: 2 },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.text.primary,
+    marginBottom: 10,
+    marginTop: 4,
+  },
+  pipelineCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
     marginBottom: 16,
   },
-  cardInfo: { flex: 1 },
-  jobTitle: { fontSize: 15, fontWeight: "600", color: Colors.text.primary },
-  company: { fontSize: 13, color: Colors.text.secondary, marginTop: 2 },
-  timeline: { paddingLeft: 4 },
   stepContainer: { flexDirection: "row", gap: 12 },
-  stepDotCol: { alignItems: "center", width: 16 },
+  stepDotCol: { alignItems: "center", width: 20 },
   stepDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: Colors.border,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    backgroundColor: Colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
-  stepDotActive: { backgroundColor: Colors.secondary },
-  stepDotCompleted: { backgroundColor: Colors.success },
-  stepLine: { width: 2, height: 24, backgroundColor: Colors.border },
+  stepDotActive: { borderColor: Colors.secondary },
+  stepDotCompleted: {
+    backgroundColor: Colors.secondary,
+    borderColor: Colors.secondary,
+  },
+  stepLine: {
+    width: 2,
+    height: 28,
+    backgroundColor: Colors.border,
+  },
   stepLineActive: { backgroundColor: Colors.secondary },
-  stepInfo: { flex: 1, paddingBottom: 12 },
-  stepLabel: { fontSize: 13, color: Colors.muted, fontWeight: "500" },
+  stepInfo: { flex: 1, paddingBottom: 16 },
+  stepLabel: { fontSize: 14, color: Colors.muted, fontWeight: "500" },
   stepLabelActive: { color: Colors.text.primary, fontWeight: "600" },
-  stepDate: { fontSize: 11, color: Colors.text.secondary, marginTop: 2 },
-  empty: { alignItems: "center", paddingTop: 60, gap: 12 },
-  emptyText: { fontSize: 14, color: Colors.muted },
+  stepDate: { fontSize: 12, color: Colors.text.secondary, marginTop: 2 },
+  scoreCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: 16,
+    gap: 10,
+  },
+  scoreRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  scoreLabel: { flex: 1, fontSize: 14, color: Colors.text.secondary },
+  scoreValue: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: Colors.text.primary,
+  },
+  datesCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: 20,
+  },
+  dateRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  dateLabel: { flex: 1, fontSize: 13, color: Colors.text.secondary },
+  dateValue: { fontSize: 13, fontWeight: "600", color: Colors.text.primary },
+  dateDivider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginVertical: 10,
+  },
+  actions: { gap: 10 },
 });

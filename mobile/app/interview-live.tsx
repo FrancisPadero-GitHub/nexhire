@@ -2,10 +2,10 @@
  * Interview Live Screen — The main AI interview interface.
  * Features animated voice waveform, question display, timer, and transcript.
  */
-import { DUMMY_INTERVIEW_QUESTIONS } from "@/constants/dummyData";
+import { DUMMY_INTERVIEW_QUESTIONS, DUMMY_JOBS } from "@/constants/dummyData";
 import { Colors } from "@/constants/theme";
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -18,6 +18,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function InterviewLiveScreen() {
+  const { jobId } = useLocalSearchParams<{ jobId: string }>();
+  const job = jobId ? DUMMY_JOBS.find((j) => j.id === jobId) : null;
   const [currentQ, setCurrentQ] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [timeLeft, setTimeLeft] = useState(
@@ -116,7 +118,11 @@ export default function InterviewLiveScreen() {
         setTimeLeft(DUMMY_INTERVIEW_QUESTIONS[currentQ + 1]?.timeLimit || 120);
         setPhase("listening");
       } else {
-        router.replace("/interview-processing");
+        router.replace(
+          jobId
+            ? `/interview-processing?jobId=${jobId}`
+            : "/interview-processing",
+        );
       }
     }, 1500);
   };
