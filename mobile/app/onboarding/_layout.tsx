@@ -1,12 +1,13 @@
+/**
+ * Onboarding Layout — Headerless stack for the onboarding flow.
+ */
+import { Stack } from "expo-router";
 import React from "react";
-import { Text, View } from "react-native";
 
-function OnboardingLayout() {
+export default function OnboardingLayout() {
   return (
-    <View>
-      <Text>Onboarding Layout</Text>
-    </View>
+    <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
+      <Stack.Screen name="index" />
+    </Stack>
   );
 }
-
-export default OnboardingLayout;

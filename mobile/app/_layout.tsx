@@ -1,3 +1,7 @@
+/**
+ * Root Layout — Registers all app routes and handles font loading.
+ * Uses expo-router Stack navigator for screen transitions.
+ */
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
   DarkTheme,
@@ -12,17 +16,12 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from "expo-router";
+export { ErrorBoundary } from "expo-router";
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: "(tabs)",
+  initialRouteName: "index",
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -31,20 +30,15 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
+    if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!loaded) return null;
 
   return <RootLayoutNav />;
 }
@@ -54,10 +48,64 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* ── Entry & Onboarding ── */}
+        <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" />
+
+        {/* ── Auth flow ── */}
+        <Stack.Screen name="(auth)" />
+
+        {/* ── Main tabs ── */}
+        <Stack.Screen name="(tabs)" />
+
+        {/* ── Resume flow ── */}
+        <Stack.Screen name="resume-upload" />
+        <Stack.Screen name="resume-parsing" />
+        <Stack.Screen name="resume-preview" />
+
+        {/* ── Interview flow ── */}
+        <Stack.Screen name="interview-instructions" />
+        <Stack.Screen name="interview-live" />
+        <Stack.Screen name="interview-processing" />
+        <Stack.Screen name="interview-completed" />
+
+        {/* ── Scoring / Results ── */}
+        <Stack.Screen name="score-summary" />
+        <Stack.Screen name="score-detailed" />
+        <Stack.Screen name="score-feedback" />
+
+        {/* ── Notifications ── */}
+        <Stack.Screen name="notifications" />
+
+        {/* ── Profile & Career ── */}
+        <Stack.Screen name="edit-profile" />
+        <Stack.Screen name="career-info" />
+
+        {/* ── Jobs ── */}
+        <Stack.Screen name="job-detail" />
+        <Stack.Screen name="job-preferences" />
+        <Stack.Screen name="application-status" />
+
+        {/* ── Settings detail ── */}
+        <Stack.Screen name="account-info" />
+        <Stack.Screen name="change-password" />
+        <Stack.Screen name="notification-settings" />
+        <Stack.Screen name="language-settings" />
+        <Stack.Screen name="privacy-policy" />
+        <Stack.Screen name="terms-of-service" />
+        <Stack.Screen name="delete-account" />
+
+        {/* ── Support ── */}
+        <Stack.Screen name="faq" />
+        <Stack.Screen name="contact-support" />
+        <Stack.Screen name="submit-ticket" />
+
+        {/* ── Modal ── */}
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", headerShown: true }}
+        />
       </Stack>
     </ThemeProvider>
   );
