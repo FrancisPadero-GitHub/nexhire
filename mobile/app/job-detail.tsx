@@ -75,8 +75,8 @@ export default function JobDetailScreen() {
 
         {/* Tags */}
         <View style={styles.tagsRow}>
-          {job.tags.map((tag) => (
-            <Badge label={tag} variant={"info"} size="sm" />
+          {job.tags.map((tag, i) => (
+            <Badge key={i} label={tag} variant={"info"} size="sm" />
           ))}
         </View>
 

@@ -68,17 +68,17 @@ export default function OnboardingScreen() {
 
   // Skip to auth
   const handleSkip = () => {
-    router.replace("/(auth)/login");
+    router.push("/(auth)/login");
   };
 
   // Get started → go to signup
   const handleGetStarted = () => {
-    router.replace("/(auth)/signup");
+    router.push("/(auth)/signup");
   };
 
   // Already have account → go to login
   const handleLogin = () => {
-    router.replace("/(auth)/login");
+    router.push("/(auth)/login");
   };
 
   // ─── Render individual slide ───────────────────────

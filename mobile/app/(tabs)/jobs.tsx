@@ -75,28 +75,33 @@ export default function JobsScreen() {
           style={styles.filterList}
           contentContainerStyle={styles.filterContent}
           renderItem={({ item }) => (
-            <Pressable
-              onPress={() => setActiveFilter(item)}
-              style={[
-                styles.filterChip,
-                activeFilter === item && styles.filterChipActive,
-              ]}
-            >
-              <Text
+            <View style={styles.filterChipView}>
+              <Pressable
+                onPress={() => setActiveFilter(item)}
                 style={[
-                  styles.filterText,
-                  activeFilter === item && styles.filterTextActive,
+                  styles.filterChip,
+                  activeFilter === item && styles.filterChipActive,
                 ]}
               >
-                {item}
-              </Text>
-            </Pressable>
+                <Text
+                  style={[
+                    styles.filterText,
+                    activeFilter === item && styles.filterTextActive,
+                  ]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {item}
+                </Text>
+              </Pressable>
+            </View>
           )}
         />
 
         {/* Job list */}
         <FlatList
           data={filtered}
+          style={styles.jobList}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
@@ -192,6 +197,9 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 15, color: Colors.text.primary },
   filterList: { maxHeight: 48, marginTop: 14 },
   filterContent: { paddingHorizontal: 20, gap: 8 },
+  filterChipView: {
+    flexDirection: "row",
+  },
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -199,14 +207,24 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
+    width: 90,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
   },
   filterChipActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
-  filterText: { fontSize: 13, fontWeight: "500", color: Colors.text.secondary },
+  filterText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: Colors.text.secondary,
+    textAlign: "center",
+  },
   filterTextActive: { color: "#FFFFFF" },
   listContent: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 100 },
+  jobList: { flex: 1 },
   jobCard: { marginBottom: 14 },
   jobTop: {
     flexDirection: "row",

@@ -19,7 +19,7 @@ function TabIcon({
 }) {
   return (
     <View style={focused ? styles.activeTab : undefined}>
-      <FontAwesome name={name} size={22} color={color} />
+      <FontAwesome name={name} size={20} color={color} />
     </View>
   );
 }
@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
   activeTab: {
     backgroundColor: `${Colors.primary}10`,
     borderRadius: 8,
-    padding: 6,
-    marginBottom: -4,
+    padding: 1,
+    marginBottom: -2,
   },
   // Elevated center interview button
   centerTab: {

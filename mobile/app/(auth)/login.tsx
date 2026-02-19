@@ -136,6 +136,14 @@ export default function LoginScreen() {
             <Text style={styles.signupLink}>Sign Up</Text>
           </Pressable>
         </View>
+        <View style={{ alignItems: "center", marginTop: "25%" }}>
+          <Pressable
+            onPress={() => router.push("/onboarding")}
+            style={styles.backButton}
+          >
+            <FontAwesome name="chevron-left" size={16} color={Colors.primary} />
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -155,6 +163,15 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     marginBottom: 36,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: `${Colors.primary}10`,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
   },
   brandName: {
     fontSize: 36,
