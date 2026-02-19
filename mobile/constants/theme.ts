@@ -21,6 +21,7 @@ export const Colors = {
   success: "#10B981",
   danger: "#EF4444",
   warning: "#F59E0B",
+  info: "#3B82F6",
   text: {
     primary: "#0F172A",
     secondary: "#475569",

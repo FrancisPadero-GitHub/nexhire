@@ -85,7 +85,7 @@ export default function ScoreSummaryScreen() {
         <Text style={styles.sectionTitle}>Recommended Roles</Text>
         <View style={styles.rolesWrap}>
           {recommendedRoles.map((role, i) => (
-            <Badge key={i} text={role} variant="info" size="md" />
+            <Badge key={i} label={role} variant="info" size="md" />
           ))}
         </View>
 

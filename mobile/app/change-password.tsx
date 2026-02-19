@@ -52,7 +52,7 @@ export default function ChangePasswordScreen() {
           onChangeText={setCurrent}
           secureTextEntry
           error={errors.current}
-          leftIcon={<FontAwesome name="key" size={14} color={Colors.muted} />}
+          leftIcon={"key"}
         />
         <ThemedInput
           label="New Password"
@@ -61,7 +61,7 @@ export default function ChangePasswordScreen() {
           secureTextEntry
           error={errors.newPw}
           helperText="Minimum 8 characters"
-          leftIcon={<FontAwesome name="lock" size={15} color={Colors.muted} />}
+          leftIcon={"lock"}
         />
         <ThemedInput
           label="Confirm New Password"
@@ -69,7 +69,7 @@ export default function ChangePasswordScreen() {
           onChangeText={setConfirm}
           secureTextEntry
           error={errors.confirm}
-          leftIcon={<FontAwesome name="lock" size={15} color={Colors.muted} />}
+          leftIcon={"lock"}
         />
 
         <View style={styles.tips}>

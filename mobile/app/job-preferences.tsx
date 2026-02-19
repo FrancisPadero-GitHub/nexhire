@@ -99,7 +99,7 @@ export default function JobPreferencesScreen() {
               onChangeText={setSalaryMin}
               keyboardType="numeric"
               leftIcon={
-                <FontAwesome name="dollar" size={14} color={Colors.muted} />
+                "dollar"
               }
             />
           </View>
@@ -110,9 +110,7 @@ export default function JobPreferencesScreen() {
               value={salaryMax}
               onChangeText={setSalaryMax}
               keyboardType="numeric"
-              leftIcon={
-                <FontAwesome name="dollar" size={14} color={Colors.muted} />
-              }
+              leftIcon={"dollar"}
             />
           </View>
         </View>
@@ -122,9 +120,7 @@ export default function JobPreferencesScreen() {
           label="Preferred Location"
           value={location}
           onChangeText={setLocation}
-          leftIcon={
-            <FontAwesome name="map-marker" size={16} color={Colors.muted} />
-          }
+          leftIcon={"map-marker"}
         />
 
         {/* Willing to relocate toggle */}

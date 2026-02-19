@@ -7,7 +7,6 @@ import ThemedButton from "@/components/ui/ThemedButton";
 import ThemedInput from "@/components/ui/ThemedInput";
 import { DUMMY_USER } from "@/constants/dummyData";
 import { Colors } from "@/constants/theme";
-import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
@@ -15,8 +14,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditProfileScreen() {
   const [form, setForm] = useState({
-    name: DUMMY_USER.name,
-    title: DUMMY_USER.title,
+    name: DUMMY_USER.firstName + " " + DUMMY_USER.lastName,
+    title: DUMMY_USER.expectedRole,
     email: DUMMY_USER.email,
     phone: DUMMY_USER.phone,
     location: DUMMY_USER.location,
@@ -57,39 +56,33 @@ export default function EditProfileScreen() {
           label="Full Name"
           value={form.name}
           onChangeText={update("name")}
-          leftIcon={<FontAwesome name="user" size={16} color={Colors.muted} />}
+          leftIcon={"user"}
         />
         <ThemedInput
           label="Professional Title"
           value={form.title}
           onChangeText={update("title")}
-          leftIcon={
-            <FontAwesome name="briefcase" size={16} color={Colors.muted} />
-          }
+          leftIcon={"briefcase"}
         />
         <ThemedInput
           label="Email"
           value={form.email}
           onChangeText={update("email")}
           keyboardType="email-address"
-          leftIcon={
-            <FontAwesome name="envelope" size={14} color={Colors.muted} />
-          }
+          leftIcon={"envelope"}
         />
         <ThemedInput
           label="Phone"
           value={form.phone}
           onChangeText={update("phone")}
           keyboardType="phone-pad"
-          leftIcon={<FontAwesome name="phone" size={16} color={Colors.muted} />}
+          leftIcon={"phone"}
         />
         <ThemedInput
           label="Location"
           value={form.location}
           onChangeText={update("location")}
-          leftIcon={
-            <FontAwesome name="map-marker" size={16} color={Colors.muted} />
-          }
+          leftIcon={"map-marker"}
         />
         <ThemedInput
           label="Bio"
@@ -97,9 +90,7 @@ export default function EditProfileScreen() {
           onChangeText={update("bio")}
           multiline
           numberOfLines={4}
-          leftIcon={
-            <FontAwesome name="pencil" size={16} color={Colors.muted} />
-          }
+          leftIcon={"pencil"}
         />
 
         <View style={styles.actions}>

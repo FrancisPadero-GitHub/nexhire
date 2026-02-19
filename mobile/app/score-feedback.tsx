@@ -14,7 +14,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ScoreFeedbackScreen() {
-  const { strengths, weaknesses, tips, recommendedRoles, overall } =
+  const { strengths, weaknesses, recommendedRoles, overall, improvementTips } =
     DUMMY_SCORES;
 
   return (
@@ -28,7 +28,11 @@ export default function ScoreFeedbackScreen() {
         <View style={styles.aiCard}>
           <View style={styles.aiRow}>
             <View style={styles.aiAvatar}>
-              <FontAwesome name="robot" size={20} color={Colors.secondary} />
+              <FontAwesome
+                name="user-circle"
+                size={20}
+                color={Colors.secondary}
+              />
             </View>
             <Text style={styles.aiLabel}>NexHire AI Coach</Text>
           </View>
@@ -82,7 +86,7 @@ export default function ScoreFeedbackScreen() {
           Improvement Tips
         </Text>
         <View style={styles.tipsCard}>
-          {tips.map((tip, i) => (
+          {improvementTips.map((tip, i) => (
             <View key={i} style={styles.tipItem}>
               <View style={styles.tipNumber}>
                 <Text style={styles.tipNumberText}>{i + 1}</Text>
@@ -99,7 +103,7 @@ export default function ScoreFeedbackScreen() {
         </Text>
         <View style={styles.rolesWrap}>
           {recommendedRoles.map((role, i) => (
-            <Badge key={i} text={role} variant="primary" size="md" />
+            <Badge key={i} label={role} variant="primary" size="md" />
           ))}
         </View>
 

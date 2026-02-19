@@ -10,7 +10,9 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 interface HeaderProps {
   title: string;
   showBack?: boolean;
-  rightIcon?: React.ComponentProps<typeof FontAwesome>["name"];
+  rightIcon?:
+    | React.ReactNode
+    | React.ComponentProps<typeof FontAwesome>["name"];
   onRightPress?: () => void;
 }
 
@@ -39,13 +41,17 @@ export default function Header({
       </Text>
 
       {rightIcon ? (
-        <Pressable
-          onPress={onRightPress}
-          style={styles.rightButton}
-          hitSlop={8}
-        >
-          <FontAwesome name={rightIcon} size={20} color={Colors.primary} />
-        </Pressable>
+        typeof rightIcon === "string" ? (
+          <Pressable
+            onPress={onRightPress}
+            style={styles.rightButton}
+            hitSlop={8}
+          >
+            <FontAwesome name={"link"} size={20} color={Colors.primary} />
+          </Pressable>
+        ) : (
+          <View style={styles.rightButton}>{rightIcon}</View>
+        )
       ) : (
         <View style={styles.placeholder} />
       )}

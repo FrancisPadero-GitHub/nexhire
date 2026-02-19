@@ -345,6 +345,46 @@ export const DUMMY_APPLICATIONS = [
     lastUpdate: "Feb 17, 2025",
     score: 88,
   },
+
+  {
+    id: "app_004",
+    jobTitle: "React Developer",
+    company: "Webfirst Labs",
+    status: "Applied" as const,
+    appliedDate: "Feb 10, 2024",
+    lastUpdate: "Feb 17, 2025",
+    score: 88,
+  },
+
+  {
+    id: "app_005",
+    jobTitle: "Frontend Engineer",
+    company: "Webfirst Labs",
+    status: "Interview" as const,
+    appliedDate: "Feb 10, 2024",
+    lastUpdate: "Feb 17, 2025",
+    score: 88,
+  },
+
+  {
+    id: "app_005",
+    jobTitle: "Frontend Engineer",
+    company: "Webfirst Labs",
+    status: "Offered" as const,
+    appliedDate: "Feb 10, 2024",
+    lastUpdate: "Feb 17, 2025",
+    score: 88,
+  },
+
+  {
+    id: "app_005",
+    jobTitle: "Frontend Engineer",
+    company: "Webfirst Labs",
+    status: "Rejected" as const,
+    appliedDate: "Feb 10, 2024",
+    lastUpdate: "Feb 17, 2025",
+    score: 88,
+  },
 ];
 
 // ─── FAQ Data ──────────────────────────────────────────

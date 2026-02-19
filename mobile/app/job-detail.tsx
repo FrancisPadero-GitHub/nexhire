@@ -31,14 +31,7 @@ export default function JobDetailScreen() {
     <SafeAreaView style={styles.safeArea}>
       <Header
         title="Job Details"
-        rightIcon={
-          <FontAwesome
-            name={saved ? "bookmark" : "bookmark-o"}
-            size={20}
-            color={saved ? Colors.accent : Colors.text.primary}
-            onPress={() => setSaved(!saved)}
-          />
-        }
+        rightIcon={saved ? "bookmark" : "bookmark-o"}
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -83,7 +76,7 @@ export default function JobDetailScreen() {
         {/* Tags */}
         <View style={styles.tagsRow}>
           {job.tags.map((tag) => (
-            <Badge key={tag} text={tag} variant="info" size="sm" />
+            <Badge label={tag} variant={"info"} size="sm" />
           ))}
         </View>
 

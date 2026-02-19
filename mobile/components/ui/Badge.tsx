@@ -12,6 +12,7 @@ type BadgeVariant =
   | "success"
   | "danger"
   | "warning"
+  | "info"
   | "muted";
 
 interface BadgeProps {
@@ -28,6 +29,7 @@ const variantColors: Record<BadgeVariant, { bg: string; text: string }> = {
   danger: { bg: `${Colors.danger}15`, text: Colors.danger },
   warning: { bg: `${Colors.warning}15`, text: Colors.warning },
   muted: { bg: `${Colors.border}`, text: Colors.muted },
+  info: { bg: `${Colors.info}15`, text: Colors.info },
 };
 
 export default function Badge({

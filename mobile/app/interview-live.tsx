@@ -174,7 +174,11 @@ export default function InterviewLiveScreen() {
         {/* ── AI Question bubble ── */}
         <View style={styles.questionBubble}>
           <View style={styles.aiAvatar}>
-            <FontAwesome name="robot" size={18} color={Colors.secondary} />
+            <FontAwesome
+              name="user-circle"
+              size={18}
+              color={Colors.secondary}
+            />
           </View>
           <Text style={styles.questionText}>{question.question}</Text>
         </View>

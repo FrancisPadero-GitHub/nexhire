@@ -89,12 +89,6 @@ export default function OnboardingScreen() {
     item: (typeof ONBOARDING_SLIDES)[0];
     index: number;
   }) => {
-    if (item.isSplash) {
-      return (
-        <SplashSlide item={item} progress={splashProgress} onNext={goToNext} />
-      );
-    }
-
     const isLast = index === ONBOARDING_SLIDES.length - 1;
 
     return (
@@ -116,7 +110,35 @@ export default function OnboardingScreen() {
 
         {/* Spacer to push bottom content */}
         <View style={styles.spacer} />
+      </View>
+    );
+  };
 
+  const isLast = currentIndex === ONBOARDING_SLIDES.length - 1;
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar style="dark" />
+      <FlatList
+        ref={flatListRef}
+        data={ONBOARDING_SLIDES}
+        renderItem={renderSlide}
+        keyExtractor={(item) => item.id}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        bounces={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: false },
+        )}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        scrollEventThrottle={16}
+        contentContainerStyle={styles.listContent}
+      />
+
+      <View pointerEvents="box-none" style={styles.stickyBottom}>
         {/* Pagination dots */}
         <PaginationDots currentIndex={currentIndex} scrollX={scrollX} />
 
@@ -147,113 +169,8 @@ export default function OnboardingScreen() {
         {/* Bottom branding */}
         <Text style={styles.branding}>Advanced Virtual Staff PH</Text>
       </View>
-    );
-  };
-
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" />
-      <FlatList
-        ref={flatListRef}
-        data={ONBOARDING_SLIDES}
-        renderItem={renderSlide}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false },
-        )}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        scrollEventThrottle={16}
-      />
     </SafeAreaView>
   );
-}
-
-// ─── Splash/Brand Slide (First Screen) ──────────────
-function SplashSlide({
-  item,
-  progress,
-  onNext,
-}: {
-  item: (typeof ONBOARDING_SLIDES)[0];
-  progress: Animated.Value;
-  onNext: () => void;
-}) {
-  // Animate progress bar width
-  const progressWidth = progress.interpolate({
-    inputRange: [0, 100],
-    outputRange: ["0%", "100%"],
-    extrapolate: "clamp",
-  });
-
-  const progressLabel = progress.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, 100],
-    extrapolate: "clamp",
-  });
-
-  return (
-    <View style={styles.slide}>
-      {/* Brand illustration */}
-      <View style={styles.splashImageContainer}>
-        <Image
-          source={item.image}
-          style={styles.splashImage}
-          resizeMode="contain"
-        />
-      </View>
-
-      {/* Brand name */}
-      <Text style={styles.brandTitle}>{item.title}</Text>
-      <Text style={styles.brandSubtitle}>{item.subtitle}</Text>
-
-      {/* Description */}
-      <Text style={styles.splashDescription}>{item.description}</Text>
-
-      <View style={styles.spacer} />
-
-      {/* Animated progress bar */}
-      <Pressable onPress={onNext} style={styles.progressArea}>
-        <View style={styles.progressTrack}>
-          <Animated.View
-            style={[styles.progressFill, { width: progressWidth }]}
-          />
-        </View>
-        <AnimatedProgressLabel progress={progressLabel} />
-      </Pressable>
-
-      {/* Bottom branding */}
-      <View style={styles.bottomBranding}>
-        <Text style={styles.branding}>Advanced Virtual Staff PH</Text>
-        <View style={styles.brandAvatar}>
-          <Text style={styles.brandAvatarText}>A</Text>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-// Small helper to display animated percentage text
-function AnimatedProgressLabel({
-  progress,
-}: {
-  progress: Animated.AnimatedInterpolation<number>;
-}) {
-  const [displayValue, setDisplayValue] = useState(0);
-
-  useEffect(() => {
-    const listener = progress.addListener(({ value }) => {
-      setDisplayValue(Math.round(value));
-    });
-    return () => progress.removeListener(listener);
-  }, [progress]);
-
-  return <Text style={styles.progressLabel}>{displayValue}%</Text>;
 }
 
 // ─── Pagination Dots ─────────────────────────────────
@@ -311,6 +228,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  listContent: {
+    paddingBottom: 220,
   },
   slide: {
     width: SCREEN_WIDTH,
@@ -430,6 +350,13 @@ const styles = StyleSheet.create({
   },
 
   // ── Action buttons
+  stickyBottom: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: "5%",
+    alignItems: "center",
+  },
   actionArea: {
     alignItems: "center",
     marginBottom: 20,

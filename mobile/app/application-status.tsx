@@ -16,10 +16,10 @@ const statusConfig: Record<
   {
     color: string;
     icon: React.ComponentProps<typeof FontAwesome>["name"];
-    variant: "success" | "warning" | "danger" | "info";
+    variant: React.ComponentProps<typeof Badge>["variant"];
   }
 > = {
-  Applied: { color: Colors.secondary, icon: "paper-plane", variant: "info" },
+  Applied: { color: Colors.secondary, icon: "paper-plane", variant: "accent" },
   "Under Review": { color: Colors.warning, icon: "eye", variant: "warning" },
   Interview: {
     color: Colors.success,
@@ -54,10 +54,14 @@ export default function ApplicationStatusScreen() {
               <View style={styles.cardHeader}>
                 <Avatar name={item.company} size={42} />
                 <View style={styles.cardInfo}>
-                  <Text style={styles.jobTitle}>{item.position}</Text>
+                  <Text style={styles.jobTitle}>{item.jobTitle}</Text>
                   <Text style={styles.company}>{item.company}</Text>
                 </View>
-                <Badge text={item.status} variant={config.variant} size="sm" />
+                <Badge
+                  label={item.status}
+                  variant={config.variant}
+                  size="sm"
+                />
               </View>
 
               {/* Timeline */}

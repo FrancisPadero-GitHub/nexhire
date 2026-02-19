@@ -45,23 +45,21 @@ export default function AccountInfoScreen() {
           label="Full Name"
           value={name}
           onChangeText={setName}
-          leftIcon={<FontAwesome name="user" size={15} color={Colors.muted} />}
+          leftIcon={"user"}
         />
         <ThemedInput
           label="Email Address"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
-          leftIcon={
-            <FontAwesome name="envelope" size={13} color={Colors.muted} />
-          }
+          leftIcon={"envelope"}
         />
         <ThemedInput
           label="Phone Number"
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
-          leftIcon={<FontAwesome name="phone" size={15} color={Colors.muted} />}
+          leftIcon={"phone"}
         />
 
         <View style={styles.infoCard}>

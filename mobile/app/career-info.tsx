@@ -85,9 +85,7 @@ export default function CareerInfoScreen() {
           value={experience}
           onChangeText={setExperience}
           keyboardType="numeric"
-          leftIcon={
-            <FontAwesome name="history" size={16} color={Colors.muted} />
-          }
+          leftIcon={"history"}
         />
 
         {/* Industry */}
@@ -95,9 +93,7 @@ export default function CareerInfoScreen() {
           label="Industry"
           value={industry}
           onChangeText={setIndustry}
-          leftIcon={
-            <FontAwesome name="industry" size={14} color={Colors.muted} />
-          }
+          leftIcon={"industry"}
         />
 
         {/* Education summary */}
